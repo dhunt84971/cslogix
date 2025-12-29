@@ -459,7 +459,7 @@ namespace CSLogix
                 _contextIndex = 0;
 
             int connDataLen = ioi.Length + 2;
-            var packet = new byte[44 + ioi.Length];
+            var packet = new byte[46 + ioi.Length];
             int offset = 0;
 
             // EIP Command - Send Unit Data (0x0070)
