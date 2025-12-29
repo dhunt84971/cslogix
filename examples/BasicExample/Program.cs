@@ -136,12 +136,31 @@ namespace BasicExample
         {
             if (result.Status == "Success")
             {
-                Console.WriteLine($"  {operation}: {result.Value}");
+                string valueStr = FormatValue(result.Value);
+                Console.WriteLine($"  {operation}: {valueStr}");
             }
             else
             {
                 Console.WriteLine($"  {operation}: ERROR - {result.Status}");
             }
+        }
+
+        static string FormatValue(object? value)
+        {
+            if (value == null)
+                return "null";
+
+            if (value is Array array)
+            {
+                var elements = new string[array.Length];
+                for (int i = 0; i < array.Length; i++)
+                {
+                    elements[i] = array.GetValue(i)?.ToString() ?? "null";
+                }
+                return $"[{string.Join(", ", elements)}]";
+            }
+
+            return value.ToString() ?? "null";
         }
     }
 }

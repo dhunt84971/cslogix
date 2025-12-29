@@ -120,7 +120,7 @@ namespace AdvancedExample
                 {
                     if (response.Status == "Success")
                     {
-                        Console.WriteLine($"  {response.TagName}: {response.Value}");
+                        Console.WriteLine($"  {response.TagName}: {FormatValue(response.Value)}");
                     }
                     else
                     {
@@ -128,6 +128,24 @@ namespace AdvancedExample
                     }
                 }
             }
+        }
+
+        static string FormatValue(object? value)
+        {
+            if (value == null)
+                return "null";
+
+            if (value is Array array)
+            {
+                var elements = new string[array.Length];
+                for (int i = 0; i < array.Length; i++)
+                {
+                    elements[i] = array.GetValue(i)?.ToString() ?? "null";
+                }
+                return $"[{string.Join(", ", elements)}]";
+            }
+
+            return value.ToString() ?? "null";
         }
 
         static void GetTagListExample(PLC plc)
