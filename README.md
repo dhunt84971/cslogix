@@ -304,6 +304,13 @@ under the Apache License, Version 2.0.
 This project is an independent derivative work and is not affiliated
 with or endorsed by the original maintainer or contributors.
 
+## Tooling
+
+The initial language port was assisted by automated tooling
+Claude Code and Iris (https://github.com/BeanSparrow/Iris),
+followed by manual review and refinement.
+These tools did not author or endorse this project.
+
 ## License
 
 This project is licensed under the APache 2.0 License - see the [LICENSE](LICENSE) file for details.

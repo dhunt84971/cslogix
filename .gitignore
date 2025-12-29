@@ -34,9 +34,6 @@ TestResults/
 .DS_Store
 Thumbs.db
 
-# IRIS project files
-.tasks/
-
 # Claude
 .claude/
 prompts/
