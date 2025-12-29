@@ -1,0 +1,11 @@
+Create a PRD document for an application using the following description:
+
+Using the source code found in the /home/dave/gitWorkspace/pylogix folder 
+and its subfolders as an example, create a C# library that allows Ethernet 
+based communications with Allen Bradley PLCs.  Use the example python code's 
+function names.  The goal is to have a functioning C# library that can be 
+referenced by a C# .NET Core application.
+
+The bulk of the code is in the eip.py file.  Analyze this file when creating
+the PRD such that it describes the functions that are to be converted.
+
