@@ -1,0 +1,15 @@
+======================================================================
+This product includes software derived from:
+
+Original Project Name
+https://github.com/dmroeder/pylogix
+Licensed under the Apache License, Version 2.0
+
+No explicit copyright notice was present in the original repository.
+
+This project is a direct port of the original project from <Source Language>
+to <Target Language>. Modifications are limited to language translation,
+platform adaptations, and build system changes.
+
+Copyright © 2025 David Hunt
+======================================================================

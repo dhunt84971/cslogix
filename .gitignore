@@ -34,8 +34,12 @@ TestResults/
 .DS_Store
 Thumbs.db
 
-# IRIS project files (keep these)
-!.tasks/
+# IRIS project files
+.tasks/
 
 # Claude
 .claude/
+prompts/
+
+# Test Code
+examples/DTH_Test/

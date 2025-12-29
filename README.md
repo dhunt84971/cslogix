@@ -296,11 +296,17 @@ Common status messages:
 
 ## Acknowledgments
 
-This library is a C# port of [pylogix](https://github.com/dmroeder/pylogix) by Dustin Roeder. Special thanks to the pylogix contributors for their excellent work on the original Python implementation.
+This project is a direct C# port of the original pylogix project maintained by
+Dustin Roeder. We thank the maintainer and all contributors to the
+original repository for their work and for making the project available
+under the Apache License, Version 2.0.
+
+This project is an independent derivative work and is not affiliated
+with or endorsed by the original maintainer or contributors.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the APache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
