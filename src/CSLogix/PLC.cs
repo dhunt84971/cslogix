@@ -213,6 +213,20 @@ namespace CSLogix
                 byte typeCode = data[offset];
                 offset += 2; // Skip type code and reserved byte
 
+                // For STRUCT types, check if it's a STRING by reading the structure handle
+                if (typeCode == CIPTypes.STRUCT && offset + 2 <= data.Length)
+                {
+                    ushort structHandle = BitConverter.ToUInt16(data, offset);
+                    offset += 2; // Skip structure handle
+
+                    // Check if this is a STRING structure (handle 0x0FCE)
+                    if (structHandle == CIPTypes.StringID)
+                    {
+                        string strValue = ParseString(data, offset);
+                        return new Response(tag, strValue, 0);
+                    }
+                }
+
                 // If we requested multiple elements, return an array
                 if (count > 1)
                 {
