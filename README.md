@@ -296,9 +296,8 @@ Common status messages:
 
 ## Acknowledgments
 
-This project is a direct C# port of the original pylogix project maintained by
-Dustin Roeder. We thank the maintainer and all contributors to the
-original repository for their work and for making the project available
+This project is a direct C# port of the original pylogix project [pylogix](https://github.com/dmroeder/pylogix) maintained by
+Dustin Roeder. We thank the maintainer and all the contributors to pylogix for their work and for making the project available
 under the Apache License, Version 2.0.
 
 This project is an independent derivative work and is not affiliated
