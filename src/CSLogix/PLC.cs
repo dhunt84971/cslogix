@@ -381,42 +381,112 @@ namespace CSLogix
             try
             {
                 // Multi-service response parsing
-                int offset = 50; // Start of CIP data
+                // The response structure after the EIP header (24 bytes) and encapsulated data header:
+                // - Service reply (1 byte): 0x8A (Multiple Service Packet reply)
+                // - Reserved (1 byte): 0x00
+                // - General Status (1 byte): 0x00 for success
+                // - Size of additional status (1 byte)
+                // - Service count (2 bytes)
+                // - Offsets (2 bytes each)
+                // - Individual service replies
 
-                // Skip service reply header
-                offset += 6; // Service + reserved + status + number of replies
+                int offset = 50; // Start of CIP data (after EIP encapsulation)
 
-                int replyCount = BitConverter.ToUInt16(data, offset - 2);
+                // Bounds check for minimum header
+                if (data.Length < offset + 4)
+                {
+                    foreach (var tag in tags)
+                    {
+                        results.Add(new Response(tag, null, "Response too short"));
+                    }
+                    return results;
+                }
 
-                // Get offsets for each reply
+                // Read service reply header
+                byte service = data[offset];
+                byte reserved = data[offset + 1];
+                byte generalStatus = data[offset + 2];
+                byte additionalStatusSize = data[offset + 3];
+
+                offset += 4 + (additionalStatusSize * 2); // Skip additional status words
+
+                // Check general status
+                if (generalStatus != 0)
+                {
+                    foreach (var tag in tags)
+                    {
+                        results.Add(new Response(tag, null, generalStatus));
+                    }
+                    return results;
+                }
+
+                // Bounds check for reply count
+                if (offset + 2 > data.Length)
+                {
+                    foreach (var tag in tags)
+                    {
+                        results.Add(new Response(tag, null, "Missing reply count"));
+                    }
+                    return results;
+                }
+
+                int replyCount = BitConverter.ToUInt16(data, offset);
+                offset += 2;
+
+                // Read offsets for each reply
                 var offsets = new List<int>();
+                int offsetsStart = offset;
                 for (int i = 0; i < replyCount && i < tags.Count; i++)
                 {
+                    if (offset + 2 > data.Length)
+                        break;
                     offsets.Add(BitConverter.ToUInt16(data, offset));
                     offset += 2;
                 }
 
-                // Parse each reply
-                int baseOffset = offset - 2 - (replyCount * 2);
+                // Parse each reply - offsets are relative to the start of the offsets array
+                int dataStart = offsetsStart;
                 for (int i = 0; i < offsets.Count && i < tags.Count; i++)
                 {
-                    int replyOffset = baseOffset + offsets[i];
+                    int replyOffset = dataStart + offsets[i];
 
+                    // Bounds check
                     if (replyOffset + 4 > data.Length)
                     {
-                        results.Add(new Response(tags[i], null, "Invalid response"));
+                        results.Add(new Response(tags[i], null, "Reply offset out of bounds"));
                         continue;
                     }
 
-                    byte status = data[replyOffset + 2];
-                    if (status != 0)
+                    // Each service reply has:
+                    // - Service code (1 byte)
+                    // - Reserved (1 byte)
+                    // - Status (1 byte)
+                    // - Additional status size (1 byte)
+                    // - Data type (2 bytes) if status == 0
+                    // - Value data
+
+                    byte replyService = data[replyOffset];
+                    byte replyStatus = data[replyOffset + 2];
+                    byte replyAdditionalSize = data[replyOffset + 3];
+
+                    if (replyStatus != 0)
                     {
-                        results.Add(new Response(tags[i], null, status));
+                        results.Add(new Response(tags[i], null, replyStatus));
                         continue;
                     }
 
-                    byte typeCode = data[replyOffset + 4];
-                    object? value = ParseValue(data, replyOffset + 6, typeCode);
+                    int valueOffset = replyOffset + 4 + (replyAdditionalSize * 2);
+
+                    if (valueOffset + 2 > data.Length)
+                    {
+                        results.Add(new Response(tags[i], null, "Value offset out of bounds"));
+                        continue;
+                    }
+
+                    byte typeCode = data[valueOffset];
+                    valueOffset += 2; // Skip type code and reserved byte
+
+                    object? value = ParseValue(data, valueOffset, typeCode);
                     results.Add(new Response(tags[i], value, 0));
                 }
 
