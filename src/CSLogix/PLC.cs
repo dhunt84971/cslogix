@@ -338,7 +338,7 @@ namespace CSLogix
             // Service - Multiple Service Packet (0x0A)
             packet.Add(CIPServices.MultipleServicePacket);
 
-            // Path size
+            // Path size (in words) - 2 words for Message Router path
             packet.Add(0x02);
             // Class type (8-bit)
             packet.Add(0x20);
@@ -353,8 +353,9 @@ namespace CSLogix
             packet.Add((byte)(requests.Count & 0xFF));
             packet.Add((byte)((requests.Count >> 8) & 0xFF));
 
-            // Calculate offsets
-            int headerSize = 2 + (requests.Count * 2); // Number + offsets
+            // Calculate offsets - offsets are relative to the start of the service data
+            // (after the count and offset table)
+            int headerSize = 2 + (requests.Count * 2); // Number (2 bytes) + offsets (2 bytes each)
             int currentOffset = headerSize;
 
             // Add offsets
@@ -381,7 +382,17 @@ namespace CSLogix
             try
             {
                 // Multi-service response parsing
-                // The response structure after the EIP header (24 bytes) and encapsulated data header:
+                // For connected messaging, CIP data structure:
+                // - EIP header: 24 bytes
+                // - Interface handle: 4 bytes
+                // - Timeout: 2 bytes
+                // - Item count: 2 bytes
+                // - Item 1 (Connected Address): type(2) + length(2) + connection ID(4) = 8 bytes
+                // - Item 2 (Connected Data): type(2) + length(2) = 4 bytes
+                // - Sequence: 2 bytes
+                // - CIP data starts at offset 46 (24 + 4 + 2 + 2 + 8 + 4 + 2)
+                //
+                // CIP MSP Reply structure:
                 // - Service reply (1 byte): 0x8A (Multiple Service Packet reply)
                 // - Reserved (1 byte): 0x00
                 // - General Status (1 byte): 0x00 for success
@@ -390,7 +401,7 @@ namespace CSLogix
                 // - Offsets (2 bytes each)
                 // - Individual service replies
 
-                int offset = 50; // Start of CIP data (after EIP encapsulation)
+                int offset = 46; // Start of CIP data for connected messaging
 
                 // Bounds check for minimum header
                 if (data.Length < offset + 4)
@@ -430,12 +441,12 @@ namespace CSLogix
                     return results;
                 }
 
+                int replyCountOffset = offset;  // Save position of reply count
                 int replyCount = BitConverter.ToUInt16(data, offset);
                 offset += 2;
 
                 // Read offsets for each reply
                 var offsets = new List<int>();
-                int offsetsStart = offset;
                 for (int i = 0; i < replyCount && i < tags.Count; i++)
                 {
                     if (offset + 2 > data.Length)
@@ -444,8 +455,8 @@ namespace CSLogix
                     offset += 2;
                 }
 
-                // Parse each reply - offsets are relative to the start of the offsets array
-                int dataStart = offsetsStart;
+                // Parse each reply - offsets are relative to the start of the reply count field
+                int dataStart = replyCountOffset;
                 for (int i = 0; i < offsets.Count && i < tags.Count; i++)
                 {
                     int replyOffset = dataStart + offsets[i];
